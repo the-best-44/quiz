@@ -1,0 +1,1052 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Quiz Atelier</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..600;1,6..96,400..500&family=Jost:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #F3F2EF;
+  --surface: #FAF9F7;
+  --fg: #161614;
+  --muted: #6A675F;
+  --line: #D6D3CB;
+  --accent: #85663C;
+  --good: #2B6A4C;
+  --bad: #9A362D;
+  --good-wash: #E6EEE9;
+  --bad-wash: #F2E5E2;
+  --display: "Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif;
+  --body: "Jost", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F0F0E;
+    --surface: #161615;
+    --fg: #ECEAE4;
+    --muted: #9A968D;
+    --line: #2C2B28;
+    --accent: #C9A66B;
+    --good: #7DB794;
+    --bad: #E0897F;
+    --good-wash: #122019;
+    --bad-wash: #27150F;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F0F0E;
+  --surface: #161615;
+  --fg: #ECEAE4;
+  --muted: #9A968D;
+  --line: #2C2B28;
+  --accent: #C9A66B;
+  --good: #7DB794;
+  --bad: #E0897F;
+  --good-wash: #122019;
+  --bad-wash: #27150F;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 1rem/1.6 var(--body);
+  -webkit-font-smoothing: antialiased;
+  padding-block: clamp(1rem, 2.5vw, 2rem) clamp(3rem, 8vw, 6rem);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+.shell { max-width: 1100px; margin: 0 auto; }
+
+.bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding-block: 0.5rem 1.1rem;
+}
+.mark { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.34em; text-transform: uppercase; }
+.live { font-size: 0.78rem; letter-spacing: 0.08em; color: var(--muted); font-variant-numeric: tabular-nums; }
+.live b { color: var(--fg); font-weight: 500; }
+.progress { height: 1px; background: var(--line); }
+.progress i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.5s ease; }
+
+.eyebrow {
+  margin: 0 0 1.4rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.label {
+  margin: 0 0 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.setup {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: clamp(2rem, 7vw, 6.5rem);
+  padding-top: clamp(2.5rem, 8vw, 6rem);
+}
+@media (max-width: 820px) { .setup { grid-template-columns: minmax(0, 1fr); } }
+
+h1 {
+  margin: 0 0 1.6rem;
+  font: 400 clamp(2.5rem, 6.4vw, 4.6rem) / 1.02 var(--display);
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+h1 em { font-style: italic; }
+.lede { margin: 0 0 2.2rem; max-width: 36ch; color: var(--muted); }
+
+.switches { display: grid; margin: 0 0 1.6rem; padding: 0; border: 0; }
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+.switch:last-child { border-bottom: 1px solid var(--line); }
+.switch input {
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  place-content: center;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  border: 1px solid var(--fg);
+  background: transparent;
+}
+.switch input::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  transform: scale(0);
+  transition: transform 0.15s ease;
+}
+.switch input:checked::after { transform: scale(1); }
+.switch input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.format summary {
+  padding: 0.5rem 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+}
+.format summary::-webkit-details-marker { display: none; }
+.format summary::after { content: "  +"; }
+.format[open] summary::after { content: "  \2212"; }
+.format pre {
+  margin: 0.8rem 0;
+  padding: 1rem;
+  overflow-x: auto;
+  font: 0.78rem / 1.6 var(--mono);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.format p { margin: 0.5rem 0; font-size: 0.88rem; color: var(--muted); }
+.format code { font: 0.82em var(--mono); color: var(--fg); }
+
+.editor { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+.editor-label { display: flex; justify-content: space-between; gap: 1rem; margin: 0; }
+textarea {
+  width: 100%;
+  min-height: 24rem;
+  padding: 1.1rem;
+  resize: vertical;
+  font: 0.8rem / 1.65 var(--mono);
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0;
+}
+textarea:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.editor.is-drop textarea { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.error { margin: 0; font-size: 0.9rem; color: var(--bad); }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1rem; }
+
+.btn {
+  display: inline-block;
+  padding: 1.05rem 1.9rem;
+  font: 500 0.72rem / 1 var(--body);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fg);
+  background: transparent;
+  border: 1px solid var(--fg);
+  border-radius: 0;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.btn:hover { color: var(--accent); border-color: var(--accent); }
+.btn-primary { color: var(--bg); background: var(--fg); }
+.btn-primary:hover { color: var(--bg); background: var(--accent); border-color: var(--accent); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn:disabled:hover { color: var(--fg); border-color: var(--fg); }
+.btn-primary:disabled:hover { color: var(--bg); background: var(--fg); border-color: var(--fg); }
+.btn:focus-visible, .link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.link {
+  padding: 0.5rem 0;
+  font: 500 0.72rem / 1 var(--body);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.5em;
+  cursor: pointer;
+}
+.link:hover { color: var(--accent); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+.quiz { max-width: 46rem; margin: 0 auto; padding-top: clamp(2rem, 6vw, 4.5rem); }
+.q-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 1.6rem; }
+.q-count { display: flex; align-items: baseline; gap: 0.6rem; margin: 0; }
+.q-no {
+  font: italic 400 clamp(2.4rem, 6vw, 3.4rem) / 1 var(--display);
+  color: var(--accent);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.q-of { font-size: 0.8rem; letter-spacing: 0.14em; color: var(--muted); font-variant-numeric: tabular-nums; }
+.q-topic { margin: 0; font-size: 0.72rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); text-align: right; }
+.q-text {
+  margin: 0 0 0.9rem;
+  font: 400 clamp(1.35rem, 3.4vw, 1.95rem) / 1.35 var(--display);
+  white-space: pre-line;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.q-text:focus { outline: none; }
+.q-hint { margin: 0 0 2rem; font-size: 0.74rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+
+.options { margin: 0 0 2rem; padding: 0; list-style: none; border-bottom: 1px solid var(--line); }
+.options li { border-top: 1px solid var(--line); }
+.opt {
+  display: grid;
+  grid-template-columns: 2.1rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 1.05rem 0.9rem;
+  font: inherit;
+  text-align: left;
+  color: var(--fg);
+  background: transparent;
+  border: 0;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+button.opt { cursor: pointer; }
+button.opt[aria-disabled="true"] { cursor: default; }
+.opt-key { font: italic 400 1.25rem / 1 var(--display); color: var(--muted); transition: color 0.18s ease; }
+.opt-text { min-width: 0; white-space: pre-line; overflow-wrap: anywhere; }
+.opt-state { display: flex; align-items: center; gap: 0.5rem; font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; }
+.icon { display: inline-flex; }
+button.opt:not([aria-disabled="true"]):hover { background: var(--surface); }
+button.opt:not([aria-disabled="true"]):hover .opt-key { color: var(--accent); }
+button.opt:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.opt[data-state="selected"] { background: var(--surface); box-shadow: inset 2px 0 0 var(--accent); }
+.opt[data-state="selected"] .opt-key { color: var(--accent); }
+.opt[data-state="correct"] { color: var(--good); background: var(--good-wash); }
+.opt[data-state="wrong"] { color: var(--bad); background: var(--bad-wash); }
+.opt[data-state="missed"] { color: var(--good); box-shadow: inset 0 0 0 1px var(--good); }
+.opt[data-state="neutral"] { opacity: 0.55; }
+.opt[data-state="correct"] .opt-key,
+.opt[data-state="wrong"] .opt-key,
+.opt[data-state="missed"] .opt-key { color: currentColor; }
+
+.verdict { margin: 0 0 0.5rem; font: italic 400 clamp(1.9rem, 4.5vw, 2.6rem) / 1.1 var(--display); animation: rise 0.35s ease both; }
+.verdict[data-right="true"] { color: var(--good); }
+.verdict[data-right="false"] { color: var(--bad); }
+.verdict-detail { margin: 0 0 1.4rem; font-size: 0.92rem; color: var(--muted); }
+.explain { max-width: 62ch; margin: 0 0 1.8rem; padding-top: 1.1rem; border-top: 1px solid var(--line); animation: rise 0.35s ease both; }
+.explain-text { margin: 0; white-space: pre-line; }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.result { max-width: 60rem; margin: 0 auto; padding-top: clamp(2rem, 6vw, 4.5rem); }
+.score { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 2.5rem; margin: 0 0 0.6rem; }
+.score-num { margin: 0; font: 400 clamp(5.5rem, 20vw, 11rem) / 0.9 var(--display); letter-spacing: -0.03em; font-variant-numeric: lining-nums; }
+.score-num small { margin-left: 0.05em; font-size: 0.38em; letter-spacing: 0; vertical-align: 0.9em; color: var(--accent); }
+.tier { margin: 0; font: italic 400 clamp(1.6rem, 4vw, 2.4rem) / 1.1 var(--display); color: var(--accent); }
+.score-sub { margin: 0 0 2.6rem; color: var(--muted); }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0 0 2rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.stat { padding: 1.4rem 0; }
+.stat + .stat { padding-left: 1.4rem; border-left: 1px solid var(--line); }
+.stat dt { font-size: 0.7rem; font-weight: 500; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); }
+.stat dd { margin: 0.6rem 0 0; font: 400 clamp(1.7rem, 4vw, 2.4rem) / 1 var(--display); font-variant-numeric: lining-nums tabular-nums; }
+@media (max-width: 640px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat:nth-child(odd) { padding-left: 0; border-left: 0; }
+  .stat:nth-child(n + 3) { border-top: 1px solid var(--line); }
+}
+.result-actions { margin: 0 0 3.5rem; }
+.topics { display: grid; gap: 1.4rem; margin: 0 0 3.5rem; }
+.topic-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 0.5rem 1rem; }
+.topic-name { font: 400 1.15rem / 1.3 var(--display); overflow-wrap: anywhere; }
+.topic-val { font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.topic-val b { font-weight: 500; color: var(--fg); }
+.track { grid-column: 1 / -1; height: 2px; background: var(--line); }
+.track i { display: block; height: 100%; background: var(--accent); }
+
+.review { border-top: 1px solid var(--line); }
+.rev { border-bottom: 1px solid var(--line); }
+.rev summary {
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 1.2rem 0;
+  list-style: none;
+  cursor: pointer;
+}
+.rev summary::-webkit-details-marker { display: none; }
+.rev summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.rev-no { font: italic 400 1.3rem / 1 var(--display); color: var(--muted); font-variant-numeric: lining-nums; }
+.rev-q { min-width: 0; font: 400 1.08rem / 1.45 var(--display); white-space: pre-line; overflow-wrap: anywhere; }
+.rev[data-right="true"] .rev-mark { color: var(--good); }
+.rev[data-right="false"] .rev-mark { color: var(--bad); }
+.rev-body { padding: 0 0 1.8rem 3.4rem; }
+.rev-body .options { margin-bottom: 1.2rem; }
+@media (max-width: 600px) { .rev-body { padding-left: 0; } }
+
+main mjx-container { max-width: 100%; }
+main mjx-container[display="true"] { margin: 1.1em 0; padding-block: 0.2em; overflow-x: auto; overflow-y: hidden; }
+main .opt mjx-container[display="true"] { margin: 0.4em 0; text-align: left; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div class="shell">
+  <header class="bar">
+    <span class="mark">Quiz Atelier</span>
+    <span class="live" id="live" hidden></span>
+  </header>
+  <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+
+  <main>
+    <section class="setup" id="setup">
+      <div>
+        <p class="eyebrow">Esercizi da JSON</p>
+        <h1>Trasforma un JSON in un <em>quiz</em>.</h1>
+        <p class="lede">Incolla il file o trascinalo nel riquadro. Le formule LaTeX vengono composte, ogni risposta riceve subito il suo verdetto e alla fine trovi il riepilogo.</p>
+
+        <fieldset class="switches">
+          <legend class="visually-hidden">Opzioni</legend>
+          <label class="switch" for="shuffle-questions"><input type="checkbox" id="shuffle-questions"> Mescola le domande</label>
+          <label class="switch" for="shuffle-options"><input type="checkbox" id="shuffle-options" checked> Mescola le risposte</label>
+        </fieldset>
+
+        <details class="format">
+          <summary>Formato del file</summary>
+<pre>{
+  "title": "Trigonometria",
+  "questions": [
+    {
+      "question": "Quanto vale \\(\\sin\\frac{\\pi}{2}\\)?",
+      "options": ["0", "\\(\\tfrac12\\)", "1"],
+      "correct": [2],
+      "explanation": "Facoltativa.",
+      "topic": "Facoltativo"
+    }
+  ]
+}</pre>
+          <p><code>correct</code> accetta indici da 0, lettere (<code>"C"</code>) o il testo della risposta. Con più valori la domanda diventa a risposta multipla.</p>
+          <p>Nel JSON il backslash va raddoppiato. Se incolli formule con il backslash singolo, vengono corrette in automatico.</p>
+          <p>Puoi anche usare <code>"quizzes"</code> con più quiz, oppure caricare più file insieme.</p>
+        </details>
+      </div>
+
+      <div class="editor" id="editor">
+        <p class="label editor-label"><label for="json-input">JSON</label><span>Trascina un file qui</span></p>
+        <textarea id="json-input" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+        <p class="error" id="error" role="alert" hidden></p>
+        <div class="row">
+          <button class="btn btn-primary" type="button" id="start">Inizia il quiz</button>
+          <label class="btn" for="file-input">Carica file</label>
+          <input class="visually-hidden" type="file" id="file-input" accept=".json,application/json" multiple>
+          <button class="link" type="button" id="sample">Esempio</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="quiz" id="quiz" hidden></section>
+    <section class="result" id="result" hidden></section>
+  </main>
+</div>
+
+<script>
+window.mathReady = new Promise(function (resolve) { window.resolveMath = resolve; });
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(', '\\)'], ['$', '$']],
+    displayMath: [['\\[', '\\]'], ['$$', '$$']],
+    processEscapes: true
+  },
+  svg: { fontCache: 'none' },
+  options: { enableMenu: false },
+  startup: {
+    typeset: false,
+    ready: function () {
+      MathJax.startup.defaultReady();
+      MathJax.startup.promise.then(window.resolveMath);
+    }
+  }
+};
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+
+<script>
+(() => {
+  const STORAGE_KEY = 'quiz-atelier-json';
+
+  const SAMPLE = {
+    title: 'Radianti e derivate',
+    questions: [
+      {
+        topic: 'Radianti',
+        question: 'Quale uguaglianza lega gradi e radianti?',
+        options: [
+          String.raw`\(180^\circ=\pi\text{ rad}\)`,
+          String.raw`\(90^\circ=\pi\text{ rad}\)`,
+          String.raw`\(360^\circ=\pi\text{ rad}\)`,
+          String.raw`\(1^\circ=\pi\text{ rad}\)`
+        ],
+        correct: [0],
+        explanation: String.raw`Mezzo giro misura \(\pi\) radianti.
+\[ \boxed{180^\circ=\pi\text{ rad}} \]`
+      },
+      {
+        topic: 'Radianti',
+        question: String.raw`Esprimi \(60^\circ\) in radianti.`,
+        options: [
+          String.raw`\(\dfrac{\pi}{6}\)`,
+          String.raw`\(\dfrac{\pi}{3}\)`,
+          String.raw`\(\dfrac{2\pi}{3}\)`,
+          String.raw`\(\dfrac{\pi}{2}\)`
+        ],
+        correct: [1],
+        explanation: String.raw`Si moltiplica per il fattore di conversione.
+\[ 60^\circ\cdot\frac{\pi}{180^\circ}=\boxed{\frac{\pi}{3}} \]`
+      },
+      {
+        topic: 'Trigonometria',
+        question: 'Quali di queste uguaglianze sono corrette?',
+        options: [
+          String.raw`\(\sin\frac{\pi}{6}=\frac{1}{2}\)`,
+          String.raw`\(\cos\frac{\pi}{3}=\frac{1}{2}\)`,
+          String.raw`\(\tan\frac{\pi}{4}=1\)`,
+          String.raw`\(\sin\frac{\pi}{2}=0\)`
+        ],
+        correct: [0, 1, 2],
+        explanation: String.raw`Il seno di \(\frac{\pi}{2}\) vale 1, non 0.
+\[ \sin\frac{\pi}{2}=\boxed{1} \]`
+      },
+      {
+        topic: 'Trigonometria',
+        question: "Qual è l'identità fondamentale della trigonometria?",
+        options: [
+          String.raw`\(\sin x+\cos x=1\)`,
+          String.raw`\(\sin^2 x+\cos^2 x=1\)`,
+          String.raw`\(\sin^2 x-\cos^2 x=1\)`,
+          String.raw`\(\tan x=\sin x\cos x\)`
+        ],
+        correct: [1],
+        explanation: String.raw`Discende dal teorema di Pitagora sulla circonferenza goniometrica.
+\[ \boxed{\sin^2 x+\cos^2 x=1} \]`
+      },
+      {
+        topic: 'Derivate',
+        question: String.raw`Quanto vale \(\dfrac{d}{dx}\sin x\)?`,
+        options: [
+          String.raw`\(-\cos x\)`,
+          String.raw`\(-\sin x\)`,
+          String.raw`\(\cos x\)`,
+          String.raw`\(\tan x\)`
+        ],
+        correct: [2],
+        explanation: String.raw`\[ \frac{d}{dx}\sin x=\boxed{\cos x} \]`
+      },
+      {
+        topic: 'Derivate',
+        question: String.raw`Quali funzioni hanno derivata \(e^x\)?`,
+        options: [
+          String.raw`\(e^x\)`,
+          String.raw`\(e^{2x}\)`,
+          String.raw`\(e^x+5\)`,
+          String.raw`\(2e^x\)`
+        ],
+        correct: [0, 2],
+        explanation: String.raw`Una costante additiva sparisce con la derivata, un fattore moltiplicativo resta.
+\[ \frac{d}{dx}\left(e^x+5\right)=e^x \qquad \frac{d}{dx}\,2e^x=2e^x \]`
+      }
+    ]
+  };
+
+  const CONTROL_CHARS = /[\b\f\t\r]/;
+  const state = { pool: [], run: [], index: 0, view: null };
+  const $ = id => document.getElementById(id);
+  const pad = n => String(n).padStart(2, '0');
+  const letter = i => String.fromCharCode(65 + i);
+  const plural = (n, one, many) => (n === 1 ? one : many);
+  const formatClock = ms => {
+    const seconds = Math.round(ms / 1000);
+    return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+  };
+  const formatSeconds = ms => `${Math.round(ms / 1000)} s`;
+
+  function shuffle(items) {
+    const copy = [...items];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function fail(message) {
+    throw new Error(message);
+  }
+
+  function tryParse(text) {
+    try {
+      return { ok: true, value: JSON.parse(text) };
+    } catch (error) {
+      return { ok: false, error: error.message };
+    }
+  }
+
+  function containsControlChars(value) {
+    if (typeof value === 'string') return CONTROL_CHARS.test(value);
+    if (Array.isArray(value)) return value.some(containsControlChars);
+    if (value && typeof value === 'object') return Object.values(value).some(containsControlChars);
+    return false;
+  }
+
+  function repairBackslashes(text) {
+    return text.replace(/\\(\\|"|\/|u[0-9a-fA-F]{4})?/g, (match, escaped) => (escaped ? match : '\\\\'));
+  }
+
+  function lenientParse(text) {
+    if (!text.trim()) fail('Il campo JSON è vuoto.');
+    const strict = tryParse(text);
+    if (strict.ok && !containsControlChars(strict.value)) return strict.value;
+    const repaired = tryParse(repairBackslashes(text));
+    if (repaired.ok) return repaired.value;
+    return fail(`JSON non valido: ${strict.error}`);
+  }
+
+  function pick(object, keys) {
+    for (const key of keys) {
+      if (object[key] !== undefined) return object[key];
+    }
+    return undefined;
+  }
+
+  function resolveIndex(value, options) {
+    if (typeof value === 'number') return value;
+    const text = String(value).trim();
+    const byText = options.indexOf(text);
+    if (byText >= 0) return byText;
+    if (/^[A-Za-z]$/.test(text)) return text.toUpperCase().charCodeAt(0) - 65;
+    if (/^\d+$/.test(text)) return Number(text);
+    return -1;
+  }
+
+  function resolveCorrect(value, options, label) {
+    if (value === undefined || value === null) fail(`${label}: manca la risposta corretta ("correct").`);
+    const list = Array.isArray(value) ? value : [value];
+    const indices = list.map(item => resolveIndex(item, options));
+    const valid = indices.length > 0 && indices.every(i => Number.isInteger(i) && i >= 0 && i < options.length);
+    if (!valid) fail(`${label}: "correct" non corrisponde a nessuna risposta.`);
+    return [...new Set(indices)];
+  }
+
+  function normalizeQuestion(raw, position, quizTitle) {
+    const label = `Domanda ${position + 1}`;
+    if (!raw || typeof raw !== 'object') fail(`${label}: formato non valido.`);
+    const text = pick(raw, ['question', 'text', 'domanda', 'prompt']);
+    if (typeof text !== 'string' || !text.trim()) fail(`${label}: manca il testo ("question").`);
+    const rawOptions = pick(raw, ['options', 'choices', 'risposte']);
+    if (!Array.isArray(rawOptions) || rawOptions.length < 2) fail(`${label}: servono almeno due risposte ("options").`);
+    const options = rawOptions.map(String);
+    const correct = resolveCorrect(pick(raw, ['correct', 'answer', 'correctAnswer', 'corrette']), options, label);
+    const explanation = pick(raw, ['explanation', 'spiegazione', 'rationale']);
+    const topic = pick(raw, ['topic', 'category', 'argomento']) ?? quizTitle;
+    return {
+      text,
+      options,
+      correct,
+      explanation: typeof explanation === 'string' ? explanation : '',
+      topic: typeof topic === 'string' && topic.trim() ? topic.trim() : null
+    };
+  }
+
+  function collectQuizzes(data) {
+    if (Array.isArray(data)) {
+      const nested = data.length > 0 && data.every(item => item && Array.isArray(item.questions));
+      return nested ? data : [{ title: null, questions: data }];
+    }
+    if (data && Array.isArray(data.quizzes)) return data.quizzes;
+    if (data && Array.isArray(data.questions)) return [data];
+    return fail('Il JSON deve contenere un elenco "questions" oppure "quizzes".');
+  }
+
+  function parseQuestions(text) {
+    const questions = [];
+    collectQuizzes(lenientParse(text)).forEach(quiz => {
+      if (!quiz || !Array.isArray(quiz.questions)) fail('Ogni quiz deve avere un elenco "questions".');
+      quiz.questions.forEach(raw => questions.push(normalizeQuestion(raw, questions.length, quiz.title)));
+    });
+    if (!questions.length) fail('Nessuna domanda trovata.');
+    return questions;
+  }
+
+  function createEntry(question, shuffleOptions) {
+    const options = question.options.map((text, i) => ({ text, ok: question.correct.includes(i) }));
+    return {
+      q: question,
+      options: shuffleOptions ? shuffle(options) : options,
+      multi: question.correct.length > 1,
+      picked: new Set(),
+      done: false,
+      right: false,
+      wrongPicks: 0,
+      missed: 0,
+      startedAt: 0,
+      ms: 0
+    };
+  }
+
+  const ICONS = {
+    check: '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>',
+    cross: '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg>'
+  };
+
+  function icon(name) {
+    const node = document.createElement('span');
+    node.className = 'icon';
+    node.innerHTML = ICONS[name];
+    return node;
+  }
+
+  function el(tag, props = {}, children = []) {
+    const node = document.createElement(tag);
+    for (const [key, value] of Object.entries(props)) {
+      if (key === 'class') node.className = value;
+      else if (key === 'text') node.textContent = value;
+      else node.setAttribute(key, value);
+    }
+    node.append(...[].concat(children));
+    return node;
+  }
+
+  let typesetChain = Promise.resolve();
+  function typeset(node) {
+    typesetChain = typesetChain
+      .then(() => window.mathReady)
+      .then(() => window.MathJax.typesetPromise([node]))
+      .catch(() => {});
+  }
+
+  const storage = {
+    read() {
+      try {
+        return localStorage.getItem(STORAGE_KEY);
+      } catch (error) {
+        return null;
+      }
+    },
+    write(value) {
+      try {
+        localStorage.setItem(STORAGE_KEY, value);
+      } catch (error) {
+        return;
+      }
+    }
+  };
+
+  function showView(name) {
+    ['setup', 'quiz', 'result'].forEach(view => { $(view).hidden = view !== name; });
+    $('live').hidden = name !== 'quiz';
+    if (name === 'setup') $('bar').style.width = '0';
+    window.scrollTo({ top: 0 });
+  }
+
+  function showError(message) {
+    $('error').textContent = message;
+    $('error').hidden = false;
+  }
+
+  function clearError() {
+    $('error').hidden = true;
+  }
+
+  function startRun(questions) {
+    const shuffleOptions = $('shuffle-options').checked;
+    const ordered = $('shuffle-questions').checked ? shuffle(questions) : [...questions];
+    state.run = ordered.map(question => createEntry(question, shuffleOptions));
+    state.index = 0;
+    showView('quiz');
+    renderQuestion();
+  }
+
+  function stateMarks(optionState) {
+    if (optionState === 'correct') return [icon('check')];
+    if (optionState === 'wrong') return [icon('cross')];
+    if (optionState === 'missed') return [el('span', { text: 'Corretta' }), icon('check')];
+    return [];
+  }
+
+  function paintOptions(list, entry) {
+    list.querySelectorAll('.opt').forEach((node, index) => {
+      const option = entry.options[index];
+      const picked = entry.picked.has(index);
+      let optionState = picked ? 'selected' : 'idle';
+      if (entry.done) {
+        if (option.ok) optionState = picked ? 'correct' : 'missed';
+        else optionState = picked ? 'wrong' : 'neutral';
+      }
+      node.dataset.state = optionState;
+      if (node.tagName === 'BUTTON') {
+        node.setAttribute('aria-pressed', String(picked));
+        node.setAttribute('aria-disabled', String(entry.done));
+      }
+      node.querySelector('.opt-state').replaceChildren(...stateMarks(optionState));
+    });
+  }
+
+  function buildOptions(entry, handler) {
+    const list = el('ol', { class: 'options' });
+    entry.options.forEach((option, index) => {
+      const node = el(handler ? 'button' : 'div', handler ? { class: 'opt', type: 'button' } : { class: 'opt' }, [
+        el('span', { class: 'opt-key', text: letter(index) }),
+        el('span', { class: 'opt-text', text: option.text }),
+        el('span', { class: 'opt-state' })
+      ]);
+      if (handler) node.addEventListener('click', () => handler(index));
+      list.append(el('li', {}, [node]));
+    });
+    paintOptions(list, entry);
+    return list;
+  }
+
+  function describeMistake(entry) {
+    if (entry.right) return '';
+    const letters = entry.options.flatMap((option, i) => (option.ok ? [letter(i)] : []));
+    const parts = [`${plural(letters.length, 'Risposta corretta', 'Risposte corrette')}: ${letters.join(', ')}`];
+    if (entry.multi && entry.wrongPicks) {
+      parts.push(`${entry.wrongPicks} ${plural(entry.wrongPicks, 'selezione errata', 'selezioni errate')}`);
+    }
+    if (entry.multi && entry.missed) {
+      parts.push(`${entry.missed} ${plural(entry.missed, 'risposta mancante', 'risposte mancanti')}`);
+    }
+    return parts.join(' · ');
+  }
+
+  function explanationBlock(entry) {
+    return el('div', { class: 'explain' }, [
+      el('p', { class: 'label', text: 'Spiegazione' }),
+      el('p', { class: 'explain-text', text: entry.q.explanation })
+    ]);
+  }
+
+  function renderFeedback() {
+    const { entry, feedback } = state.view;
+    const nodes = [el('p', { class: 'verdict', 'data-right': String(entry.right), text: entry.right ? 'Corretto' : 'Sbagliato' })];
+    const detail = describeMistake(entry);
+    if (detail) nodes.push(el('p', { class: 'verdict-detail', text: detail }));
+    if (entry.q.explanation) nodes.push(explanationBlock(entry));
+    feedback.replaceChildren(...nodes);
+    typeset(feedback);
+  }
+
+  function updateProgress() {
+    const done = state.run.filter(entry => entry.done).length;
+    $('bar').style.width = `${(done / state.run.length) * 100}%`;
+  }
+
+  function updateLive() {
+    const answered = state.run.filter(entry => entry.done);
+    const right = answered.filter(entry => entry.right).length;
+    $('live').replaceChildren(
+      'Corrette ',
+      el('b', { text: String(right) }),
+      '  ·  Errate ',
+      el('b', { text: String(answered.length - right) })
+    );
+  }
+
+  function syncAction() {
+    const { entry, action, actions } = state.view;
+    if (!entry.done && !entry.multi) {
+      actions.hidden = true;
+      return;
+    }
+    actions.hidden = false;
+    if (!entry.done) {
+      action.textContent = 'Conferma risposta';
+      action.disabled = entry.picked.size === 0;
+      action.onclick = finalize;
+      return;
+    }
+    const last = state.index === state.run.length - 1;
+    action.textContent = last ? 'Vedi il riepilogo' : 'Prossima domanda';
+    action.disabled = false;
+    action.onclick = last ? renderResults : nextQuestion;
+  }
+
+  function finalize() {
+    const { entry, options } = state.view;
+    entry.wrongPicks = [...entry.picked].filter(i => !entry.options[i].ok).length;
+    entry.missed = entry.options.filter((option, i) => option.ok && !entry.picked.has(i)).length;
+    entry.right = entry.wrongPicks === 0 && entry.missed === 0;
+    entry.done = true;
+    entry.ms = Date.now() - entry.startedAt;
+    paintOptions(options, entry);
+    renderFeedback();
+    syncAction();
+    updateProgress();
+    updateLive();
+  }
+
+  function pickOption(index) {
+    const { entry, options } = state.view;
+    if (entry.done) return;
+    if (!entry.multi) {
+      entry.picked = new Set([index]);
+      finalize();
+      return;
+    }
+    if (entry.picked.has(index)) entry.picked.delete(index);
+    else entry.picked.add(index);
+    paintOptions(options, entry);
+    syncAction();
+  }
+
+  function nextQuestion() {
+    state.index += 1;
+    renderQuestion();
+    window.scrollTo({ top: 0 });
+  }
+
+  function renderQuestion() {
+    const entry = state.run[state.index];
+    entry.startedAt = Date.now();
+    const options = buildOptions(entry, pickOption);
+    const feedback = el('div', { class: 'feedback', 'aria-live': 'polite' });
+    const action = el('button', { class: 'btn btn-primary', type: 'button' });
+    const actions = el('div', { class: 'actions' }, [action]);
+    state.view = { entry, options, feedback, action, actions };
+
+    const head = el('div', { class: 'q-head' }, [
+      el('p', { class: 'q-count' }, [
+        el('span', { class: 'q-no', text: pad(state.index + 1) }),
+        el('span', { class: 'q-of', text: `/ ${pad(state.run.length)}` })
+      ])
+    ]);
+    if (entry.q.topic) head.append(el('p', { class: 'q-topic', text: entry.q.topic }));
+
+    const title = el('h2', { class: 'q-text', tabindex: '-1', text: entry.q.text });
+    const correctCount = entry.q.correct.length;
+    const hint = el('p', {
+      class: 'q-hint',
+      text: entry.multi ? `Più risposte: seleziona le ${correctCount} corrette` : 'Una sola risposta corretta'
+    });
+
+    $('quiz').replaceChildren(head, title, hint, options, feedback, actions);
+    syncAction();
+    updateProgress();
+    updateLive();
+    typeset($('quiz'));
+    title.focus({ preventScroll: true });
+  }
+
+  function tierFor(percent) {
+    if (percent >= 90) return 'Eccellente';
+    if (percent >= 75) return 'Solido';
+    if (percent >= 50) return 'Da consolidare';
+    return 'Da rivedere';
+  }
+
+  function topicSection(run) {
+    const groups = new Map();
+    run.forEach(entry => {
+      const key = entry.q.topic || 'Senza argomento';
+      const group = groups.get(key) || { right: 0, total: 0 };
+      group.total += 1;
+      if (entry.right) group.right += 1;
+      groups.set(key, group);
+    });
+    const rows = [...groups].map(([name, group]) => {
+      const percent = Math.round((group.right / group.total) * 100);
+      const fill = el('i');
+      fill.style.width = `${percent}%`;
+      return el('div', { class: 'topic-row' }, [
+        el('span', { class: 'topic-name', text: name }),
+        el('span', { class: 'topic-val' }, [el('b', { text: `${group.right}/${group.total}` }), ` · ${percent}%`]),
+        el('div', { class: 'track' }, [fill])
+      ]);
+    });
+    return [el('p', { class: 'label', text: 'Per argomento' }), el('div', { class: 'topics' }, rows)];
+  }
+
+  function reviewItem(entry, index) {
+    const summary = el('summary', {}, [
+      el('span', { class: 'rev-no', text: pad(index + 1) }),
+      el('span', { class: 'rev-q', text: entry.q.text }),
+      el('span', { class: 'rev-mark' }, [icon(entry.right ? 'check' : 'cross')])
+    ]);
+    const body = el('div', { class: 'rev-body' }, [buildOptions(entry)]);
+    const detail = describeMistake(entry);
+    if (detail) body.append(el('p', { class: 'verdict-detail', text: detail }));
+    if (entry.q.explanation) body.append(explanationBlock(entry));
+    const props = { class: 'rev', 'data-right': String(entry.right) };
+    if (!entry.right) props.open = '';
+    return el('details', props, [summary, body]);
+  }
+
+  function renderResults() {
+    const run = state.run;
+    const total = run.length;
+    const right = run.filter(entry => entry.right).length;
+    const wrong = total - right;
+    const percent = Math.round((right / total) * 100);
+    const totalMs = run.reduce((sum, entry) => sum + entry.ms, 0);
+
+    const stats = [
+      ['Corrette', `${right} / ${total}`],
+      ['Errate', String(wrong)],
+      ['Rapporto', `${right} : ${wrong}`],
+      ['Tempo medio', formatSeconds(totalMs / total)]
+    ];
+
+    const buttons = [];
+    if (wrong > 0) {
+      buttons.push(el('button', { class: 'btn btn-primary', type: 'button', id: 'retry-wrong', text: 'Rifai gli errori' }));
+    }
+    buttons.push(el('button', { class: wrong > 0 ? 'btn' : 'btn btn-primary', type: 'button', id: 'restart', text: 'Ricomincia' }));
+    buttons.push(el('button', { class: 'link', type: 'button', id: 'new-json', text: 'Nuovo JSON' }));
+
+    const nodes = [
+      el('h2', { class: 'eyebrow', text: 'Riepilogo' }),
+      el('div', { class: 'score' }, [
+        el('p', { class: 'score-num' }, [String(percent), el('small', { text: '%' })]),
+        el('p', { class: 'tier', text: tierFor(percent) })
+      ]),
+      el('p', {
+        class: 'score-sub',
+        text: `${right} ${plural(right, 'risposta corretta', 'risposte corrette')} su ${total} · tempo totale ${formatClock(totalMs)}`
+      }),
+      el('dl', { class: 'stats' }, stats.map(([label, value]) =>
+        el('div', { class: 'stat' }, [el('dt', { text: label }), el('dd', { text: value })])
+      )),
+      el('div', { class: 'row result-actions' }, buttons)
+    ];
+    if (run.some(entry => entry.q.topic)) nodes.push(...topicSection(run));
+    nodes.push(el('p', { class: 'label', text: 'Revisione' }));
+    nodes.push(el('div', { class: 'review' }, run.map(reviewItem)));
+
+    $('result').replaceChildren(...nodes);
+    showView('result');
+    $('bar').style.width = '100%';
+    typeset($('result'));
+
+    const retry = $('retry-wrong');
+    if (retry) retry.addEventListener('click', () => startRun(run.filter(entry => !entry.right).map(entry => entry.q)));
+    $('restart').addEventListener('click', () => startRun(state.pool));
+    $('new-json').addEventListener('click', () => showView('setup'));
+  }
+
+  async function loadFiles(fileList) {
+    const files = [...fileList];
+    if (!files.length) return;
+    try {
+      const texts = await Promise.all(files.map(file => file.text()));
+      const quizzes = texts.flatMap((text, i) =>
+        collectQuizzes(lenientParse(text)).map(quiz => ({
+          ...quiz,
+          title: quiz.title || files[i].name.replace(/\.json$/i, '')
+        }))
+      );
+      $('json-input').value = JSON.stringify({ quizzes }, null, 2);
+      clearError();
+    } catch (error) {
+      showError(error.message);
+    }
+  }
+
+  function startFromInput() {
+    try {
+      const text = $('json-input').value;
+      const questions = parseQuestions(text);
+      storage.write(text);
+      clearError();
+      state.pool = questions;
+      startRun(questions);
+    } catch (error) {
+      showError(error.message);
+    }
+  }
+
+  function setupEvents() {
+    const editor = $('editor');
+    $('start').addEventListener('click', startFromInput);
+    $('sample').addEventListener('click', () => {
+      $('json-input').value = JSON.stringify(SAMPLE, null, 2);
+      clearError();
+    });
+    $('file-input').addEventListener('change', async event => {
+      await loadFiles(event.target.files);
+      event.target.value = '';
+    });
+    ['dragenter', 'dragover'].forEach(name => editor.addEventListener(name, event => {
+      event.preventDefault();
+      editor.classList.add('is-drop');
+    }));
+    ['dragleave', 'drop'].forEach(name => editor.addEventListener(name, event => {
+      event.preventDefault();
+      editor.classList.remove('is-drop');
+    }));
+    editor.addEventListener('drop', event => loadFiles(event.dataTransfer.files));
+
+    document.addEventListener('keydown', event => {
+      if (event.metaKey || event.ctrlKey || event.altKey || $('quiz').hidden || !state.view) return;
+      if (event.key === 'Enter') {
+        const { action, actions } = state.view;
+        if (!actions.hidden && !action.disabled) {
+          event.preventDefault();
+          action.click();
+        }
+        return;
+      }
+      const index = event.key.length === 1 ? event.key.toLowerCase().charCodeAt(0) - 97 : -1;
+      if (index >= 0 && index < state.view.entry.options.length) pickOption(index);
+    });
+  }
+
+  $('json-input').value = storage.read() || JSON.stringify(SAMPLE, null, 2);
+  setupEvents();
+})();
+</script>
+
+</body></html>
