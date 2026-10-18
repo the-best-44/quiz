@@ -1,13 +1,14 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Quiz Atelier</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..600;1,6..96,400..500&family=Jost:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..600;1,6..96,400..500&family=Jost:wght@400;500;600&display=swap">
 <style>
 :root {
   --bg: #F3F2EF;
   --surface: #FAF9F7;
   --fg: #161614;
   --muted: #6A675F;
+  --ink-2: #4B4842;
   --line: #D6D3CB;
   --accent: #85663C;
   --good: #2B6A4C;
@@ -24,6 +25,7 @@
     --surface: #161615;
     --fg: #ECEAE4;
     --muted: #9A968D;
+    --ink-2: #C4C0B7;
     --line: #2C2B28;
     --accent: #C9A66B;
     --good: #7DB794;
@@ -38,6 +40,7 @@
   --surface: #161615;
   --fg: #ECEAE4;
   --muted: #9A968D;
+  --ink-2: #C4C0B7;
   --line: #2C2B28;
   --accent: #C9A66B;
   --good: #7DB794;
@@ -64,15 +67,17 @@ body {
 .bar {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 1rem;
   padding-block: 0.5rem 1.1rem;
 }
+.bar-end { display: flex; align-items: center; gap: 1.4rem; }
 .mark { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.34em; text-transform: uppercase; }
-.live { font-size: 0.78rem; letter-spacing: 0.08em; color: var(--muted); font-variant-numeric: tabular-nums; }
-.live b { color: var(--fg); font-weight: 500; }
+.live { font-size: 0.82rem; letter-spacing: 0.06em; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.live b { color: var(--fg); font-weight: 600; }
 .progress { height: 1px; background: var(--line); }
 .progress i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.5s ease; }
+body[data-view="quiz"] .progress { height: 3px; }
 
 .eyebrow {
   margin: 0 0 1.4rem;
@@ -119,7 +124,7 @@ h1 em { font-style: italic; }
   cursor: pointer;
 }
 .switch:last-child { border-bottom: 1px solid var(--line); }
-.switch input {
+.switch input, .check {
   appearance: none;
   -webkit-appearance: none;
   display: grid;
@@ -130,8 +135,9 @@ h1 em { font-style: italic; }
   margin: 0;
   border: 1px solid var(--fg);
   background: transparent;
+  cursor: pointer;
 }
-.switch input::after {
+.switch input::after, .check::after {
   content: "";
   width: 6px;
   height: 6px;
@@ -139,8 +145,8 @@ h1 em { font-style: italic; }
   transform: scale(0);
   transition: transform 0.15s ease;
 }
-.switch input:checked::after { transform: scale(1); }
-.switch input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.switch input:checked::after, .check:checked::after { transform: scale(1); }
+.switch input:focus-visible, .check:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
 .format summary {
   padding: 0.5rem 0;
@@ -199,6 +205,7 @@ textarea:focus-visible { outline: none; border-color: var(--accent); box-shadow:
 .btn:hover { color: var(--accent); border-color: var(--accent); }
 .btn-primary { color: var(--bg); background: var(--fg); }
 .btn-primary:hover { color: var(--bg); background: var(--accent); border-color: var(--accent); }
+.btn-small { padding: 0.85rem 1.3rem; }
 .btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .btn:disabled:hover { color: var(--fg); border-color: var(--fg); }
 .btn-primary:disabled:hover { color: var(--bg); background: var(--fg); border-color: var(--fg); }
@@ -216,94 +223,145 @@ textarea:focus-visible { outline: none; border-color: var(--accent); box-shadow:
   cursor: pointer;
 }
 .link:hover { color: var(--accent); }
+.link[data-armed="true"] { color: var(--bad); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
-.quiz { max-width: 46rem; margin: 0 auto; padding-top: clamp(2rem, 6vw, 4.5rem); }
-.q-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 1.6rem; }
-.q-count { display: flex; align-items: baseline; gap: 0.6rem; margin: 0; }
-.q-no {
-  font: italic 400 clamp(2.4rem, 6vw, 3.4rem) / 1 var(--display);
-  color: var(--accent);
-  font-variant-numeric: lining-nums tabular-nums;
+.library { max-width: 60rem; margin: 0 auto; padding-top: clamp(2rem, 6vw, 4rem); }
+.lib-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1.2rem 2rem; margin-bottom: 2rem; }
+.lib-title { margin: 0; font: 400 clamp(2.2rem, 5.4vw, 3.6rem) / 1.04 var(--display); letter-spacing: -0.015em; }
+.lib-count { margin: 0.7rem 0 0; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.lib-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 1.6rem; }
+.quiz-list { display: grid; gap: 0.8rem; margin: 0 0 2rem; padding: 0; list-style: none; }
+.quiz-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem 1.4rem;
+  padding: 1.2rem 1.4rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  transition: opacity 0.2s ease, border-color 0.2s ease;
 }
-.q-of { font-size: 0.8rem; letter-spacing: 0.14em; color: var(--muted); font-variant-numeric: tabular-nums; }
-.q-topic { margin: 0; font-size: 0.72rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); text-align: right; }
+.quiz-row[data-selected="false"] { opacity: 0.55; }
+.quiz-row:hover { border-color: var(--fg); }
+.quiz-info { min-width: 0; }
+.quiz-name { display: block; font: 600 1.2rem / 1.3 var(--body); cursor: pointer; overflow-wrap: anywhere; }
+.quiz-meta { margin: 0.25rem 0 0; font-size: 0.92rem; color: var(--ink-2); }
+.tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.7rem 0 0; padding: 0; list-style: none; }
+.tags li { padding: 0.2rem 0.6rem; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2); border: 1px solid var(--line); border-radius: 3px; }
+.quiz-side { display: flex; align-items: center; gap: 1.6rem; }
+.quiz-score { width: 12.5rem; }
+.quiz-score b { font: 600 1.25rem / 1 var(--body); font-variant-numeric: tabular-nums; }
+.quiz-score small { display: block; margin-top: 0.35rem; font-size: 0.8rem; line-height: 1.4; color: var(--ink-2); }
+.mini-track { height: 3px; margin-top: 0.5rem; background: var(--line); }
+.mini-track i { display: block; height: 100%; background: var(--accent); }
+@media (max-width: 700px) {
+  .quiz-row { grid-template-columns: auto minmax(0, 1fr); }
+  .quiz-side { grid-column: 1 / -1; justify-content: space-between; }
+  .quiz-score { width: auto; flex: 1; min-width: 0; }
+}
+.lib-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.4rem 2rem; padding-top: 1.6rem; border-top: 1px solid var(--line); }
+.lib-options { display: grid; gap: 0.7rem; }
+.inline-switch { display: flex; align-items: center; gap: 0.8rem; font-size: 0.95rem; cursor: pointer; }
+.lib-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.6rem; }
+.lib-summary { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+.quiz { max-width: 46rem; margin: 0 auto; padding-top: clamp(1.5rem, 5vw, 3rem); }
+.q-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 1.1rem; }
+.q-count { margin: 0; font-size: 0.82rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.q-count b { font-weight: 600; color: var(--fg); }
+.q-topic { margin: 0; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); text-align: right; }
 .q-text {
-  margin: 0 0 0.9rem;
-  font: 400 clamp(1.35rem, 3.4vw, 1.95rem) / 1.35 var(--display);
+  margin: 0 0 0.7rem;
+  font: 500 clamp(1.3rem, 3vw, 1.65rem) / 1.5 var(--body);
   white-space: pre-line;
-  text-wrap: pretty;
   overflow-wrap: anywhere;
 }
 .q-text:focus { outline: none; }
-.q-hint { margin: 0 0 2rem; font-size: 0.74rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.q-hint { margin: 0 0 1.6rem; font-size: 0.92rem; color: var(--ink-2); }
 
-.options { margin: 0 0 2rem; padding: 0; list-style: none; border-bottom: 1px solid var(--line); }
-.options li { border-top: 1px solid var(--line); }
+.options { display: grid; gap: 0.7rem; margin: 0 0 1.8rem; padding: 0; list-style: none; }
 .opt {
   display: grid;
-  grid-template-columns: 2.1rem minmax(0, 1fr) auto;
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.9rem;
+  gap: 1rem;
   width: 100%;
-  padding: 1.05rem 0.9rem;
-  font: inherit;
+  padding: 0.95rem 1.1rem;
+  font: 400 1.06rem / 1.55 var(--body);
   text-align: left;
   color: var(--fg);
-  background: transparent;
-  border: 0;
-  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
+.opt-key {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  font: 500 0.85rem / 1 var(--body);
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.opt-text { min-width: 0; white-space: pre-line; overflow-wrap: anywhere; }
+.opt-state { display: flex; align-items: center; gap: 0.5rem; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; }
+.icon { display: inline-flex; }
 button.opt { cursor: pointer; }
 button.opt[aria-disabled="true"] { cursor: default; }
-.opt-key { font: italic 400 1.25rem / 1 var(--display); color: var(--muted); transition: color 0.18s ease; }
-.opt-text { min-width: 0; white-space: pre-line; overflow-wrap: anywhere; }
-.opt-state { display: flex; align-items: center; gap: 0.5rem; font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; }
-.icon { display: inline-flex; }
-button.opt:not([aria-disabled="true"]):hover { background: var(--surface); }
-button.opt:not([aria-disabled="true"]):hover .opt-key { color: var(--accent); }
-button.opt:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-.opt[data-state="selected"] { background: var(--surface); box-shadow: inset 2px 0 0 var(--accent); }
-.opt[data-state="selected"] .opt-key { color: var(--accent); }
-.opt[data-state="correct"] { color: var(--good); background: var(--good-wash); }
-.opt[data-state="wrong"] { color: var(--bad); background: var(--bad-wash); }
-.opt[data-state="missed"] { color: var(--good); box-shadow: inset 0 0 0 1px var(--good); }
-.opt[data-state="neutral"] { opacity: 0.55; }
-.opt[data-state="correct"] .opt-key,
-.opt[data-state="wrong"] .opt-key,
-.opt[data-state="missed"] .opt-key { color: currentColor; }
+button.opt:not([aria-disabled="true"]):hover { border-color: var(--fg); }
+button.opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.opt[data-state="selected"] { border-color: var(--fg); box-shadow: 0 0 0 1px var(--fg); }
+.opt[data-state="selected"] .opt-key { color: var(--bg); background: var(--fg); border-color: var(--fg); }
+.opt[data-state="correct"] { background: var(--good-wash); border-color: var(--good); box-shadow: 0 0 0 1px var(--good); }
+.opt[data-state="correct"] .opt-key { color: var(--bg); background: var(--good); border-color: var(--good); }
+.opt[data-state="correct"] .opt-state, .opt[data-state="missed"] .opt-state { color: var(--good); }
+.opt[data-state="missed"] { border: 1px dashed var(--good); }
+.opt[data-state="missed"] .opt-key { color: var(--good); border-color: var(--good); }
+.opt[data-state="wrong"] { background: var(--bad-wash); border-color: var(--bad); box-shadow: 0 0 0 1px var(--bad); }
+.opt[data-state="wrong"] .opt-key { color: var(--bg); background: var(--bad); border-color: var(--bad); }
+.opt[data-state="wrong"] .opt-state { color: var(--bad); }
+.opt[data-state="neutral"] { opacity: 0.6; }
 
-.verdict { margin: 0 0 0.5rem; font: italic 400 clamp(1.9rem, 4.5vw, 2.6rem) / 1.1 var(--display); animation: rise 0.35s ease both; }
+.verdict { display: flex; align-items: center; gap: 0.6rem; margin: 0 0 0.4rem; font: 600 1.3rem / 1.2 var(--body); animation: rise 0.3s ease both; }
 .verdict[data-right="true"] { color: var(--good); }
 .verdict[data-right="false"] { color: var(--bad); }
-.verdict-detail { margin: 0 0 1.4rem; font-size: 0.92rem; color: var(--muted); }
-.explain { max-width: 62ch; margin: 0 0 1.8rem; padding-top: 1.1rem; border-top: 1px solid var(--line); animation: rise 0.35s ease both; }
-.explain-text { margin: 0; white-space: pre-line; }
+.verdict-detail { margin: 0 0 1.2rem; font-size: 0.95rem; color: var(--ink-2); }
+.explain { margin: 0 0 1.6rem; padding: 1.1rem 1.25rem; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; animation: rise 0.3s ease both; }
+.explain .label { color: var(--ink-2); }
+.explain-text { margin: 0; font-size: 1rem; line-height: 1.7; white-space: pre-line; }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.actions .btn { min-width: 13rem; }
+@media (max-width: 520px) { .actions .btn { width: 100%; } }
 
 .result { max-width: 60rem; margin: 0 auto; padding-top: clamp(2rem, 6vw, 4.5rem); }
 .score { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 2.5rem; margin: 0 0 0.6rem; }
 .score-num { margin: 0; font: 400 clamp(5.5rem, 20vw, 11rem) / 0.9 var(--display); letter-spacing: -0.03em; font-variant-numeric: lining-nums; }
 .score-num small { margin-left: 0.05em; font-size: 0.38em; letter-spacing: 0; vertical-align: 0.9em; color: var(--accent); }
 .tier { margin: 0; font: italic 400 clamp(1.6rem, 4vw, 2.4rem) / 1.1 var(--display); color: var(--accent); }
-.score-sub { margin: 0 0 2.6rem; color: var(--muted); }
+.score-sub { margin: 0 0 2.6rem; color: var(--ink-2); }
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0 0 2rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .stat { padding: 1.4rem 0; }
 .stat + .stat { padding-left: 1.4rem; border-left: 1px solid var(--line); }
-.stat dt { font-size: 0.7rem; font-weight: 500; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); }
-.stat dd { margin: 0.6rem 0 0; font: 400 clamp(1.7rem, 4vw, 2.4rem) / 1 var(--display); font-variant-numeric: lining-nums tabular-nums; }
+.stat dt { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-2); }
+.stat dd { margin: 0.6rem 0 0; font: 600 clamp(1.5rem, 3.6vw, 2rem) / 1 var(--body); font-variant-numeric: tabular-nums; }
 @media (max-width: 640px) {
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stat:nth-child(odd) { padding-left: 0; border-left: 0; }
   .stat:nth-child(n + 3) { border-top: 1px solid var(--line); }
 }
+.result .label { color: var(--ink-2); }
 .result-actions { margin: 0 0 3.5rem; }
-.topics { display: grid; gap: 1.4rem; margin: 0 0 3.5rem; }
+.topics { display: grid; gap: 1.3rem; margin: 0 0 3.5rem; }
 .topic-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 0.5rem 1rem; }
-.topic-name { font: 400 1.15rem / 1.3 var(--display); overflow-wrap: anywhere; }
-.topic-val { font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-.topic-val b { font-weight: 500; color: var(--fg); }
-.track { grid-column: 1 / -1; height: 2px; background: var(--line); }
+.topic-name { font: 500 1.02rem / 1.4 var(--body); overflow-wrap: anywhere; }
+.topic-val { font-size: 0.9rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.topic-val b { font-weight: 600; color: var(--fg); }
+.track { grid-column: 1 / -1; height: 3px; background: var(--line); }
 .track i { display: block; height: 100%; background: var(--accent); }
 
 .review { border-top: 1px solid var(--line); }
@@ -313,18 +371,17 @@ button.opt:focus-visible { outline: 2px solid var(--accent); outline-offset: -2p
   grid-template-columns: 2.4rem minmax(0, 1fr) auto;
   align-items: baseline;
   gap: 1rem;
-  padding: 1.2rem 0;
+  padding: 1.15rem 0;
   list-style: none;
   cursor: pointer;
 }
 .rev summary::-webkit-details-marker { display: none; }
 .rev summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.rev-no { font: italic 400 1.3rem / 1 var(--display); color: var(--muted); font-variant-numeric: lining-nums; }
-.rev-q { min-width: 0; font: 400 1.08rem / 1.45 var(--display); white-space: pre-line; overflow-wrap: anywhere; }
+.rev-no { font: 500 0.88rem / 1.5 var(--body); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.rev-q { min-width: 0; font: 500 1.05rem / 1.5 var(--body); white-space: pre-line; overflow-wrap: anywhere; }
 .rev[data-right="true"] .rev-mark { color: var(--good); }
 .rev[data-right="false"] .rev-mark { color: var(--bad); }
-.rev-body { padding: 0 0 1.8rem 3.4rem; }
-.rev-body .options { margin-bottom: 1.2rem; }
+.rev-body { padding: 0 0 1.6rem 3.4rem; }
 @media (max-width: 600px) { .rev-body { padding-left: 0; } }
 
 main mjx-container { max-width: 100%; }
@@ -339,7 +396,10 @@ main .opt mjx-container[display="true"] { margin: 0.4em 0; text-align: left; }
 <div class="shell">
   <header class="bar">
     <span class="mark">Quiz Atelier</span>
-    <span class="live" id="live" hidden></span>
+    <div class="bar-end">
+      <span class="live" id="live" hidden></span>
+      <button class="link" type="button" id="exit" hidden>Esci</button>
+    </div>
   </header>
   <div class="progress" aria-hidden="true"><i id="bar"></i></div>
 
@@ -381,10 +441,36 @@ main .opt mjx-container[display="true"] { margin: 0.4em 0; text-align: left; }
         <textarea id="json-input" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
         <p class="error" id="error" role="alert" hidden></p>
         <div class="row">
-          <button class="btn btn-primary" type="button" id="start">Inizia il quiz</button>
+          <button class="btn btn-primary" type="button" id="start">Continua</button>
           <label class="btn" for="file-input">Carica file</label>
           <input class="visually-hidden" type="file" id="file-input" accept=".json,application/json" multiple>
           <button class="link" type="button" id="sample">Esempio</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="library" id="library" hidden>
+      <div class="lib-head">
+        <div>
+          <p class="eyebrow">Libreria</p>
+          <h2 class="lib-title">I tuoi quiz</h2>
+          <p class="lib-count" id="lib-count"></p>
+        </div>
+        <div class="lib-tools">
+          <button class="link" type="button" id="select-all">Seleziona tutti</button>
+          <button class="link" type="button" id="reset-scores">Azzera risultati</button>
+          <button class="link" type="button" id="edit-json">Modifica JSON</button>
+        </div>
+      </div>
+      <ol class="quiz-list" id="quiz-list"></ol>
+      <div class="lib-foot">
+        <div class="lib-options">
+          <label class="inline-switch" for="lib-shuffle-questions"><input class="check" type="checkbox" id="lib-shuffle-questions"> Mescola le domande</label>
+          <label class="inline-switch" for="lib-shuffle-options"><input class="check" type="checkbox" id="lib-shuffle-options" checked> Mescola le risposte</label>
+        </div>
+        <div class="lib-actions">
+          <span class="lib-summary" id="lib-summary"></span>
+          <button class="btn btn-primary" type="button" id="start-selected">Avvia selezionati</button>
         </div>
       </div>
     </section>
@@ -417,93 +503,147 @@ window.MathJax = {
 
 <script>
 (() => {
-  const STORAGE_KEY = 'quiz-atelier-json';
+  const JSON_KEY = 'quiz-atelier-json';
+  const SCORES_KEY = 'quiz-atelier-scores';
 
   const SAMPLE = {
-    title: 'Radianti e derivate',
-    questions: [
+    quizzes: [
       {
-        topic: 'Radianti',
-        question: 'Quale uguaglianza lega gradi e radianti?',
-        options: [
-          String.raw`\(180^\circ=\pi\text{ rad}\)`,
-          String.raw`\(90^\circ=\pi\text{ rad}\)`,
-          String.raw`\(360^\circ=\pi\text{ rad}\)`,
-          String.raw`\(1^\circ=\pi\text{ rad}\)`
-        ],
-        correct: [0],
-        explanation: String.raw`Mezzo giro misura \(\pi\) radianti.
+        title: 'Radianti',
+        questions: [
+          {
+            question: 'Quale uguaglianza lega gradi e radianti?',
+            options: [
+              String.raw`\(180^\circ=\pi\text{ rad}\)`,
+              String.raw`\(90^\circ=\pi\text{ rad}\)`,
+              String.raw`\(360^\circ=\pi\text{ rad}\)`,
+              String.raw`\(1^\circ=\pi\text{ rad}\)`
+            ],
+            correct: [0],
+            explanation: String.raw`Mezzo giro misura \(\pi\) radianti.
 \[ \boxed{180^\circ=\pi\text{ rad}} \]`
-      },
-      {
-        topic: 'Radianti',
-        question: String.raw`Esprimi \(60^\circ\) in radianti.`,
-        options: [
-          String.raw`\(\dfrac{\pi}{6}\)`,
-          String.raw`\(\dfrac{\pi}{3}\)`,
-          String.raw`\(\dfrac{2\pi}{3}\)`,
-          String.raw`\(\dfrac{\pi}{2}\)`
-        ],
-        correct: [1],
-        explanation: String.raw`Si moltiplica per il fattore di conversione.
+          },
+          {
+            question: String.raw`Esprimi \(60^\circ\) in radianti.`,
+            options: [
+              String.raw`\(\dfrac{\pi}{6}\)`,
+              String.raw`\(\dfrac{\pi}{3}\)`,
+              String.raw`\(\dfrac{2\pi}{3}\)`,
+              String.raw`\(\dfrac{\pi}{2}\)`
+            ],
+            correct: [1],
+            explanation: String.raw`Si moltiplica per il fattore di conversione.
 \[ 60^\circ\cdot\frac{\pi}{180^\circ}=\boxed{\frac{\pi}{3}} \]`
+          },
+          {
+            question: String.raw`Quanti gradi misura \(\dfrac{5\pi}{6}\) rad?`,
+            options: [
+              String.raw`\(120^\circ\)`,
+              String.raw`\(135^\circ\)`,
+              String.raw`\(150^\circ\)`,
+              String.raw`\(210^\circ\)`
+            ],
+            correct: [2],
+            explanation: String.raw`\[ \frac{5\pi}{6}\cdot\frac{180^\circ}{\pi}=\boxed{150^\circ} \]`
+          }
+        ]
       },
       {
-        topic: 'Trigonometria',
-        question: 'Quali di queste uguaglianze sono corrette?',
-        options: [
-          String.raw`\(\sin\frac{\pi}{6}=\frac{1}{2}\)`,
-          String.raw`\(\cos\frac{\pi}{3}=\frac{1}{2}\)`,
-          String.raw`\(\tan\frac{\pi}{4}=1\)`,
-          String.raw`\(\sin\frac{\pi}{2}=0\)`
-        ],
-        correct: [0, 1, 2],
-        explanation: String.raw`Il seno di \(\frac{\pi}{2}\) vale 1, non 0.
+        title: 'Trigonometria',
+        questions: [
+          {
+            topic: 'Valori notevoli',
+            question: 'Quali di queste uguaglianze sono corrette?',
+            options: [
+              String.raw`\(\sin\frac{\pi}{6}=\frac{1}{2}\)`,
+              String.raw`\(\cos\frac{\pi}{3}=\frac{1}{2}\)`,
+              String.raw`\(\tan\frac{\pi}{4}=1\)`,
+              String.raw`\(\sin\frac{\pi}{2}=0\)`
+            ],
+            correct: [0, 1, 2],
+            explanation: String.raw`Il seno di \(\frac{\pi}{2}\) vale 1, non 0.
 \[ \sin\frac{\pi}{2}=\boxed{1} \]`
-      },
-      {
-        topic: 'Trigonometria',
-        question: "Qual è l'identità fondamentale della trigonometria?",
-        options: [
-          String.raw`\(\sin x+\cos x=1\)`,
-          String.raw`\(\sin^2 x+\cos^2 x=1\)`,
-          String.raw`\(\sin^2 x-\cos^2 x=1\)`,
-          String.raw`\(\tan x=\sin x\cos x\)`
-        ],
-        correct: [1],
-        explanation: String.raw`Discende dal teorema di Pitagora sulla circonferenza goniometrica.
+          },
+          {
+            question: "Qual è l'identità fondamentale della trigonometria?",
+            options: [
+              String.raw`\(\sin x+\cos x=1\)`,
+              String.raw`\(\sin^2 x+\cos^2 x=1\)`,
+              String.raw`\(\sin^2 x-\cos^2 x=1\)`,
+              String.raw`\(\tan x=\sin x\cos x\)`
+            ],
+            correct: [1],
+            explanation: String.raw`Discende dal teorema di Pitagora sulla circonferenza goniometrica.
 \[ \boxed{\sin^2 x+\cos^2 x=1} \]`
+          },
+          {
+            question: String.raw`Qual è il periodo di \(\tan x\)?`,
+            options: [
+              String.raw`\(2\pi\)`,
+              String.raw`\(\pi\)`,
+              String.raw`\(\dfrac{\pi}{2}\)`,
+              String.raw`\(4\pi\)`
+            ],
+            correct: [1],
+            explanation: String.raw`La tangente si ripete ogni mezzo giro.
+\[ \tan(x+\pi)=\tan x \]`
+          }
+        ]
       },
       {
-        topic: 'Derivate',
-        question: String.raw`Quanto vale \(\dfrac{d}{dx}\sin x\)?`,
-        options: [
-          String.raw`\(-\cos x\)`,
-          String.raw`\(-\sin x\)`,
-          String.raw`\(\cos x\)`,
-          String.raw`\(\tan x\)`
-        ],
-        correct: [2],
-        explanation: String.raw`\[ \frac{d}{dx}\sin x=\boxed{\cos x} \]`
-      },
-      {
-        topic: 'Derivate',
-        question: String.raw`Quali funzioni hanno derivata \(e^x\)?`,
-        options: [
-          String.raw`\(e^x\)`,
-          String.raw`\(e^{2x}\)`,
-          String.raw`\(e^x+5\)`,
-          String.raw`\(2e^x\)`
-        ],
-        correct: [0, 2],
-        explanation: String.raw`Una costante additiva sparisce con la derivata, un fattore moltiplicativo resta.
+        title: 'Derivate',
+        questions: [
+          {
+            question: String.raw`Quanto vale \(\dfrac{d}{dx}\sin x\)?`,
+            options: [
+              String.raw`\(-\cos x\)`,
+              String.raw`\(-\sin x\)`,
+              String.raw`\(\cos x\)`,
+              String.raw`\(\tan x\)`
+            ],
+            correct: [2],
+            explanation: String.raw`\[ \frac{d}{dx}\sin x=\boxed{\cos x} \]`
+          },
+          {
+            question: String.raw`Quali funzioni hanno derivata \(e^x\)?`,
+            options: [
+              String.raw`\(e^x\)`,
+              String.raw`\(e^{2x}\)`,
+              String.raw`\(e^x+5\)`,
+              String.raw`\(2e^x\)`
+            ],
+            correct: [0, 2],
+            explanation: String.raw`Una costante additiva sparisce con la derivata, un fattore moltiplicativo resta.
 \[ \frac{d}{dx}\left(e^x+5\right)=e^x \qquad \frac{d}{dx}\,2e^x=2e^x \]`
+          },
+          {
+            question: String.raw`Quanto vale \(\dfrac{d}{dx}\ln x\) per \(x>0\)?`,
+            options: [
+              String.raw`\(x\)`,
+              String.raw`\(\dfrac{1}{x}\)`,
+              String.raw`\(\ln x\)`,
+              String.raw`\(e^x\)`
+            ],
+            correct: [1],
+            explanation: String.raw`\[ \frac{d}{dx}\ln x=\boxed{\frac{1}{x}} \]`
+          }
+        ]
       }
     ]
   };
 
   const CONTROL_CHARS = /[\b\f\t\r]/;
-  const state = { pool: [], run: [], index: 0, view: null };
+  const state = {
+    library: [],
+    selected: new Set(),
+    scores: {},
+    pool: [],
+    run: [],
+    index: 0,
+    view: null,
+    record: false
+  };
+  const settings = { shuffleQuestions: false, shuffleOptions: true };
   const $ = id => document.getElementById(id);
   const pad = n => String(n).padStart(2, '0');
   const letter = i => String.fromCharCode(65 + i);
@@ -521,6 +661,12 @@ window.MathJax = {
       [copy[i], copy[j]] = [copy[j], copy[i]];
     }
     return copy;
+  }
+
+  function hashText(text) {
+    let hash = 5381;
+    for (let i = 0; i < text.length; i++) hash = ((hash << 5) + hash + text.charCodeAt(i)) | 0;
+    return (hash >>> 0).toString(36);
   }
 
   function fail(message) {
@@ -581,8 +727,8 @@ window.MathJax = {
     return [...new Set(indices)];
   }
 
-  function normalizeQuestion(raw, position, quizTitle) {
-    const label = `Domanda ${position + 1}`;
+  function normalizeQuestion(raw, position, quizTitle, quizLabel) {
+    const label = `${quizLabel}, domanda ${position + 1}`;
     if (!raw || typeof raw !== 'object') fail(`${label}: formato non valido.`);
     const text = pick(raw, ['question', 'text', 'domanda', 'prompt']);
     if (typeof text !== 'string' || !text.trim()) fail(`${label}: manca il testo ("question").`);
@@ -597,7 +743,8 @@ window.MathJax = {
       options,
       correct,
       explanation: typeof explanation === 'string' ? explanation : '',
-      topic: typeof topic === 'string' && topic.trim() ? topic.trim() : null
+      topic: typeof topic === 'string' && topic.trim() ? topic.trim() : null,
+      quizId: ''
     };
   }
 
@@ -611,14 +758,21 @@ window.MathJax = {
     return fail('Il JSON deve contenere un elenco "questions" oppure "quizzes".');
   }
 
-  function parseQuestions(text) {
-    const questions = [];
-    collectQuizzes(lenientParse(text)).forEach(quiz => {
-      if (!quiz || !Array.isArray(quiz.questions)) fail('Ogni quiz deve avere un elenco "questions".');
-      quiz.questions.forEach(raw => questions.push(normalizeQuestion(raw, questions.length, quiz.title)));
+  function parseQuizzes(text) {
+    const seen = new Set();
+    const quizzes = collectQuizzes(lenientParse(text)).map((quiz, index) => {
+      const rawTitle = quiz && typeof quiz.title === 'string' && quiz.title.trim() ? quiz.title.trim() : null;
+      const label = rawTitle || `Quiz ${index + 1}`;
+      if (!quiz || !Array.isArray(quiz.questions) || !quiz.questions.length) fail(`${label}: nessuna domanda trovata.`);
+      const questions = quiz.questions.map((raw, position) => normalizeQuestion(raw, position, rawTitle, label));
+      let id = hashText(`${label}|${questions.map(question => question.text).join('|')}`);
+      while (seen.has(id)) id += 'x';
+      seen.add(id);
+      questions.forEach(question => { question.quizId = id; });
+      return { id, title: label, questions };
     });
-    if (!questions.length) fail('Nessuna domanda trovata.');
-    return questions;
+    if (!quizzes.length) fail('Nessun quiz trovato.');
+    return quizzes;
   }
 
   function createEntry(question, shuffleOptions) {
@@ -638,8 +792,8 @@ window.MathJax = {
   }
 
   const ICONS = {
-    check: '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>',
-    cross: '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg>'
+    check: '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>',
+    cross: '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg>'
   };
 
   function icon(name) {
@@ -669,26 +823,72 @@ window.MathJax = {
   }
 
   const storage = {
-    read() {
+    read(key) {
       try {
-        return localStorage.getItem(STORAGE_KEY);
+        return localStorage.getItem(key);
       } catch (error) {
         return null;
       }
     },
-    write(value) {
+    write(key, value) {
       try {
-        localStorage.setItem(STORAGE_KEY, value);
+        localStorage.setItem(key, value);
       } catch (error) {
         return;
       }
     }
   };
 
+  function readScores() {
+    try {
+      return JSON.parse(storage.read(SCORES_KEY) || '{}') || {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  function recordScores(run) {
+    const totals = new Map();
+    run.forEach(entry => {
+      const total = totals.get(entry.q.quizId) || { right: 0, count: 0 };
+      total.count += 1;
+      if (entry.right) total.right += 1;
+      totals.set(entry.q.quizId, total);
+    });
+    totals.forEach((total, id) => {
+      const percent = Math.round((total.right / total.count) * 100);
+      const previous = state.scores[id] || { attempts: 0, best: 0 };
+      state.scores[id] = { attempts: previous.attempts + 1, best: Math.max(previous.best, percent), last: percent };
+    });
+    storage.write(SCORES_KEY, JSON.stringify(state.scores));
+  }
+
+  function confirmTwice(button, armedLabel, action) {
+    const label = button.textContent;
+    let timer = 0;
+    const disarm = () => {
+      clearTimeout(timer);
+      button.dataset.armed = 'false';
+      button.textContent = label;
+    };
+    button.addEventListener('click', () => {
+      if (button.dataset.armed === 'true') {
+        disarm();
+        action();
+        return;
+      }
+      button.dataset.armed = 'true';
+      button.textContent = armedLabel;
+      timer = setTimeout(disarm, 3500);
+    });
+  }
+
   function showView(name) {
-    ['setup', 'quiz', 'result'].forEach(view => { $(view).hidden = view !== name; });
+    ['setup', 'library', 'quiz', 'result'].forEach(view => { $(view).hidden = view !== name; });
+    document.body.dataset.view = name;
     $('live').hidden = name !== 'quiz';
-    if (name === 'setup') $('bar').style.width = '0';
+    $('exit').hidden = name !== 'quiz';
+    if (name !== 'quiz' && name !== 'result') $('bar').style.width = '0';
     window.scrollTo({ top: 0 });
   }
 
@@ -701,10 +901,84 @@ window.MathJax = {
     $('error').hidden = true;
   }
 
-  function startRun(questions) {
-    const shuffleOptions = $('shuffle-options').checked;
-    const ordered = $('shuffle-questions').checked ? shuffle(questions) : [...questions];
-    state.run = ordered.map(question => createEntry(question, shuffleOptions));
+  function syncLibrary() {
+    const selected = state.library.filter(quiz => state.selected.has(quiz.id));
+    const questionCount = selected.reduce((sum, quiz) => sum + quiz.questions.length, 0);
+    const totalQuestions = state.library.reduce((sum, quiz) => sum + quiz.questions.length, 0);
+    $('lib-count').textContent = `${state.library.length} ${plural(state.library.length, 'quiz', 'quiz')} · ${totalQuestions} ${plural(totalQuestions, 'domanda', 'domande')}`;
+    $('lib-summary').textContent = selected.length
+      ? `${selected.length} ${plural(selected.length, 'selezionato', 'selezionati')} · ${questionCount} ${plural(questionCount, 'domanda', 'domande')}`
+      : 'Nessun quiz selezionato';
+    $('start-selected').disabled = selected.length === 0;
+    $('select-all').textContent = selected.length === state.library.length ? 'Deseleziona tutti' : 'Seleziona tutti';
+    document.querySelectorAll('.quiz-row').forEach(row => {
+      row.dataset.selected = String(state.selected.has(row.dataset.id));
+      row.querySelector('.check').checked = state.selected.has(row.dataset.id);
+    });
+  }
+
+  function scoreBlock(quiz) {
+    const stat = state.scores[quiz.id];
+    if (!stat) return el('div', { class: 'quiz-score' }, [el('small', { text: 'Non ancora provato' })]);
+    const fill = el('i');
+    fill.style.width = `${stat.best}%`;
+    return el('div', { class: 'quiz-score' }, [
+      el('b', { text: `${stat.best}%` }),
+      el('small', { text: `Migliore · ${stat.attempts} ${plural(stat.attempts, 'tentativo', 'tentativi')} · ultimo ${stat.last}%` }),
+      el('div', { class: 'mini-track' }, [fill])
+    ]);
+  }
+
+  function quizRow(quiz) {
+    const checkboxId = `pick-${quiz.id}`;
+    const checkbox = el('input', { class: 'check', type: 'checkbox', id: checkboxId, 'aria-label': `Seleziona ${quiz.title}` });
+    checkbox.addEventListener('change', () => {
+      if (checkbox.checked) state.selected.add(quiz.id);
+      else state.selected.delete(quiz.id);
+      syncLibrary();
+    });
+
+    const count = quiz.questions.length;
+    const multi = quiz.questions.filter(question => question.correct.length > 1).length;
+    const meta = `${count} ${plural(count, 'domanda', 'domande')}${multi ? ` · ${multi} a risposta multipla` : ''}`;
+    const topics = [...new Set(quiz.questions.map(question => question.topic).filter(topic => topic && topic !== quiz.title))].slice(0, 4);
+    const info = el('div', { class: 'quiz-info' }, [
+      el('label', { class: 'quiz-name', for: checkboxId, text: quiz.title }),
+      el('p', { class: 'quiz-meta', text: meta })
+    ]);
+    if (topics.length) info.append(el('ul', { class: 'tags' }, topics.map(topic => el('li', { text: topic }))));
+
+    const start = el('button', { class: 'btn btn-small', type: 'button', text: 'Avvia' });
+    start.addEventListener('click', () => launch([quiz]));
+
+    return el('li', { class: 'quiz-row', 'data-id': quiz.id }, [
+      checkbox,
+      info,
+      el('div', { class: 'quiz-side' }, [scoreBlock(quiz), start])
+    ]);
+  }
+
+  function renderLibrary() {
+    $('quiz-list').replaceChildren(...state.library.map(quizRow));
+    syncLibrary();
+  }
+
+  function openLibrary(quizzes) {
+    state.library = quizzes;
+    state.selected = new Set(quizzes.map(quiz => quiz.id));
+    renderLibrary();
+    showView('library');
+  }
+
+  function launch(quizzes) {
+    state.pool = quizzes.flatMap(quiz => quiz.questions);
+    startRun(state.pool, true);
+  }
+
+  function startRun(questions, record) {
+    const ordered = settings.shuffleQuestions ? shuffle(questions) : [...questions];
+    state.run = ordered.map(question => createEntry(question, settings.shuffleOptions));
+    state.record = record;
     state.index = 0;
     showView('quiz');
     renderQuestion();
@@ -772,7 +1046,12 @@ window.MathJax = {
 
   function renderFeedback() {
     const { entry, feedback } = state.view;
-    const nodes = [el('p', { class: 'verdict', 'data-right': String(entry.right), text: entry.right ? 'Corretto' : 'Sbagliato' })];
+    const nodes = [
+      el('p', { class: 'verdict', 'data-right': String(entry.right) }, [
+        icon(entry.right ? 'check' : 'cross'),
+        el('span', { text: entry.right ? 'Corretto' : 'Sbagliato' })
+      ])
+    ];
     const detail = describeMistake(entry);
     if (detail) nodes.push(el('p', { class: 'verdict-detail', text: detail }));
     if (entry.q.explanation) nodes.push(explanationBlock(entry));
@@ -859,18 +1138,14 @@ window.MathJax = {
     state.view = { entry, options, feedback, action, actions };
 
     const head = el('div', { class: 'q-head' }, [
-      el('p', { class: 'q-count' }, [
-        el('span', { class: 'q-no', text: pad(state.index + 1) }),
-        el('span', { class: 'q-of', text: `/ ${pad(state.run.length)}` })
-      ])
+      el('p', { class: 'q-count' }, ['Domanda ', el('b', { text: pad(state.index + 1) }), ` di ${pad(state.run.length)}`])
     ]);
     if (entry.q.topic) head.append(el('p', { class: 'q-topic', text: entry.q.topic }));
 
     const title = el('h2', { class: 'q-text', tabindex: '-1', text: entry.q.text });
-    const correctCount = entry.q.correct.length;
     const hint = el('p', {
       class: 'q-hint',
-      text: entry.multi ? `Più risposte: seleziona le ${correctCount} corrette` : 'Una sola risposta corretta'
+      text: entry.multi ? `Più risposte: seleziona le ${entry.q.correct.length} corrette` : 'Una sola risposta corretta'
     });
 
     $('quiz').replaceChildren(head, title, hint, options, feedback, actions);
@@ -897,6 +1172,7 @@ window.MathJax = {
       if (entry.right) group.right += 1;
       groups.set(key, group);
     });
+    if (groups.size < 2) return [];
     const rows = [...groups].map(([name, group]) => {
       const percent = Math.round((group.right / group.total) * 100);
       const fill = el('i');
@@ -932,6 +1208,7 @@ window.MathJax = {
     const wrong = total - right;
     const percent = Math.round((right / total) * 100);
     const totalMs = run.reduce((sum, entry) => sum + entry.ms, 0);
+    if (state.record) recordScores(run);
 
     const stats = [
       ['Corrette', `${right} / ${total}`],
@@ -945,6 +1222,7 @@ window.MathJax = {
       buttons.push(el('button', { class: 'btn btn-primary', type: 'button', id: 'retry-wrong', text: 'Rifai gli errori' }));
     }
     buttons.push(el('button', { class: wrong > 0 ? 'btn' : 'btn btn-primary', type: 'button', id: 'restart', text: 'Ricomincia' }));
+    buttons.push(el('button', { class: 'link', type: 'button', id: 'to-library', text: 'Torna ai quiz' }));
     buttons.push(el('button', { class: 'link', type: 'button', id: 'new-json', text: 'Nuovo JSON' }));
 
     const nodes = [
@@ -960,11 +1238,11 @@ window.MathJax = {
       el('dl', { class: 'stats' }, stats.map(([label, value]) =>
         el('div', { class: 'stat' }, [el('dt', { text: label }), el('dd', { text: value })])
       )),
-      el('div', { class: 'row result-actions' }, buttons)
+      el('div', { class: 'row result-actions' }, buttons),
+      ...topicSection(run),
+      el('p', { class: 'label', text: 'Revisione' }),
+      el('div', { class: 'review' }, run.map(reviewItem))
     ];
-    if (run.some(entry => entry.q.topic)) nodes.push(...topicSection(run));
-    nodes.push(el('p', { class: 'label', text: 'Revisione' }));
-    nodes.push(el('div', { class: 'review' }, run.map(reviewItem)));
 
     $('result').replaceChildren(...nodes);
     showView('result');
@@ -972,8 +1250,12 @@ window.MathJax = {
     typeset($('result'));
 
     const retry = $('retry-wrong');
-    if (retry) retry.addEventListener('click', () => startRun(run.filter(entry => !entry.right).map(entry => entry.q)));
-    $('restart').addEventListener('click', () => startRun(state.pool));
+    if (retry) retry.addEventListener('click', () => startRun(run.filter(entry => !entry.right).map(entry => entry.q), false));
+    $('restart').addEventListener('click', () => startRun(state.pool, state.record));
+    $('to-library').addEventListener('click', () => {
+      renderLibrary();
+      showView('library');
+    });
     $('new-json').addEventListener('click', () => showView('setup'));
   }
 
@@ -995,22 +1277,32 @@ window.MathJax = {
     }
   }
 
-  function startFromInput() {
+  function continueFromInput() {
     try {
       const text = $('json-input').value;
-      const questions = parseQuestions(text);
-      storage.write(text);
+      const quizzes = parseQuizzes(text);
+      storage.write(JSON_KEY, text);
       clearError();
-      state.pool = questions;
-      startRun(questions);
+      openLibrary(quizzes);
     } catch (error) {
       showError(error.message);
     }
   }
 
+  function bindSetting(key, ids) {
+    const nodes = ids.map($);
+    nodes.forEach(node => {
+      node.checked = settings[key];
+      node.addEventListener('change', () => {
+        settings[key] = node.checked;
+        nodes.forEach(other => { other.checked = settings[key]; });
+      });
+    });
+  }
+
   function setupEvents() {
     const editor = $('editor');
-    $('start').addEventListener('click', startFromInput);
+    $('start').addEventListener('click', continueFromInput);
     $('sample').addEventListener('click', () => {
       $('json-input').value = JSON.stringify(SAMPLE, null, 2);
       clearError();
@@ -1029,6 +1321,26 @@ window.MathJax = {
     }));
     editor.addEventListener('drop', event => loadFiles(event.dataTransfer.files));
 
+    bindSetting('shuffleQuestions', ['shuffle-questions', 'lib-shuffle-questions']);
+    bindSetting('shuffleOptions', ['shuffle-options', 'lib-shuffle-options']);
+
+    $('select-all').addEventListener('click', () => {
+      const all = state.selected.size === state.library.length;
+      state.selected = new Set(all ? [] : state.library.map(quiz => quiz.id));
+      syncLibrary();
+    });
+    $('start-selected').addEventListener('click', () => launch(state.library.filter(quiz => state.selected.has(quiz.id))));
+    $('edit-json').addEventListener('click', () => showView('setup'));
+    confirmTwice($('reset-scores'), 'Conferma azzeramento', () => {
+      state.scores = {};
+      storage.write(SCORES_KEY, '{}');
+      renderLibrary();
+    });
+    confirmTwice($('exit'), 'Conferma uscita', () => {
+      renderLibrary();
+      showView(state.library.length ? 'library' : 'setup');
+    });
+
     document.addEventListener('keydown', event => {
       if (event.metaKey || event.ctrlKey || event.altKey || $('quiz').hidden || !state.view) return;
       if (event.key === 'Enter') {
@@ -1044,8 +1356,12 @@ window.MathJax = {
     });
   }
 
-  $('json-input').value = storage.read() || JSON.stringify(SAMPLE, null, 2);
+  const saved = storage.read(JSON_KEY);
+  const isOldSample = saved && saved.includes('"title": "Radianti e derivate"');
+  $('json-input').value = saved && !isOldSample ? saved : JSON.stringify(SAMPLE, null, 2);
+  state.scores = readScores();
   setupEvents();
+  document.body.dataset.view = 'setup';
 })();
 </script>
 
